@@ -1,0 +1,120 @@
+--1.
+rowdata = LOAD '/user/maria_dev/assignment2/2006.csv' USING PigStorage(',') AS (
+    Year:int, Month:int, DayofMonth:int, DayofWeek:int, DepTime:int, CRSDepTime:int, 
+    ArrTime:int, CRSArrTime:int, UniqueCarrier:chararray, FlightNum:int, TailNum:chararray, 
+    ActualElapsedTime:int, CRSELapsedTime:int, AirTime:int, ArrDelay:int, DepDelay:int, 
+    Origin:chararray, Dest:chararray, Distance:int, TaxiIn:int, TaxiOut:int, Cancelled:int, 
+    CancellationCode:chararray, Diverted:int, CarrierDelay:int, WeatherDelay:int, 
+    NASDelay:int, SecurityDelay:int, LateAircraftDelay:int
+);
+delay = FILTER rowdata BY Cancelled == 0 AND (ArrDelay + DepDelay) / 2 > 0;
+
+--day
+season = FOREACH delay GENERATE (ArrDelay + DepDelay)/2 AS AvgDelay, (int)FLOOR(CRSDepTime / 100) AS DepHour,Month,DayofWeek,
+    (CASE
+        WHEN Month IN (12, 1, 2) THEN 'Winter'
+        WHEN Month IN (3, 4, 5) THEN 'Spring'
+        WHEN Month IN (6, 7, 8) THEN 'Summer'
+        WHEN Month IN (9, 10, 11) THEN 'Autumn'
+    END) AS Season;
+groups = GROUP season BY (DepHour , Season);
+hour_delay = FOREACH groups GENERATE group.DepHour AS DepHour, group.Season AS Season, AVG(season.AvgDelay) AS MeanDelay;
+
+DUMP hour_delay;
+
+--week
+week = FOREACH delay GENERATE 
+    (ArrDelay + DepDelay)/2 AS AvgDelay,
+    DayofWeek AS Week,  
+    (CASE DayofWeek
+        WHEN 1 THEN 'Monday'
+        WHEN 2 THEN 'Tuesday'
+        WHEN 3 THEN 'Wednesday'
+        WHEN 4 THEN 'Thursday'
+        WHEN 5 THEN 'Friday'
+        WHEN 6 THEN 'Saturday'
+        WHEN 7 THEN 'Sunday'
+    END) AS WeekName,
+    (CASE
+        WHEN Month IN (12, 1, 2) THEN 'Winter'
+        WHEN Month IN (3, 4, 5) THEN 'Spring'
+        WHEN Month IN (6, 7, 8) THEN 'Summer'
+        WHEN Month IN (9, 10, 11) THEN 'Autumn'
+    END) AS Season;
+
+weekgroup = GROUP week BY (Week, WeekName, Season); 
+week_delay = FOREACH weekgroup GENERATE
+    group.Week AS Week,
+    group.WeekName AS WeekName,
+    group.Season AS Season,
+    AVG(week.AvgDelay) AS MeanDelay;  
+
+order_week_delay = ORDER week_delay BY Week;  
+DUMP order_week_delay;
+
+--month
+month = FOREACH delay GENERATE 
+    (ArrDelay + DepDelay)/2 AS AvgDelay,
+    Month,  
+    (CASE Month
+        WHEN 1 THEN 'Jan'
+        WHEN 2 THEN 'Feb'
+        WHEN 3 THEN 'Mar'
+        WHEN 4 THEN 'Apr'
+        WHEN 5 THEN 'May'
+        WHEN 6 THEN 'Jun'
+        WHEN 7 THEN 'Jul'
+        WHEN 8 THEN 'Aug'
+        WHEN 9 THEN 'Sept'
+        WHEN 10 THEN 'Oct'
+        WHEN 11 THEN 'Nov'
+        WHEN 12 THEN 'Dec'
+    END) AS MonthName,
+    (CASE
+        WHEN Month IN (12, 1, 2) THEN 'Winter'
+        WHEN Month IN (3, 4, 5) THEN 'Spring'
+        WHEN Month IN (6, 7, 8) THEN 'Summer'
+        WHEN Month IN (9, 10, 11) THEN 'Autumn'
+    END) AS Season;
+
+monthgroup = GROUP month BY (Month, MonthName,Season);  
+month_delay = FOREACH monthgroup GENERATE 
+    group.Month AS Month, 
+    group.MonthName AS MonthName,
+    group.Season AS Season,
+    AVG(month.AvgDelay) AS MeanDelay;
+
+order_month_delay = ORDER month_delay BY Month;  
+
+DUMP order_month_delay;
+
+STORE hour_delay INTO '/user/maria_dev/assignment2/Hour_dealy_season' USING PigStorage(',');
+STORE order_week_delay INTO '/user/maria_dev/assignment2/Week_delay_season' USING PigStorage(',');
+STORE order_month_delay INTO '/user/maria_dev/assignment2/Month_delay_season' USING PigStorage(',');
+
+--2.
+
+--3.
+
+rowdata = LOAD '/user/maria_dev/assignment2/2006.csv' USING PigStorage(',') AS (
+    Year:int, Month:int, DayofMonth:int, DayofWeek:int, DepTime:int, CRSDepTime:int, 
+    ArrTime:int, CRSArrTime:int, UniqueCarrier:chararray, FlightNum:int, TailNum:chararray, 
+    ActualElapsedTime:int, CRSELapsedTime:int, AirTime:int, ArrDelay:int, DepDelay:int, 
+    Origin:chararray, Dest:chararray, Distance:int, TaxiIn:int, TaxiOut:int, Cancelled:int, 
+    CancellationCode:chararray, Diverted:int, CarrierDelay:int, WeatherDelay:int, 
+    NASDelay:int, SecurityDelay:int, LateAircraftDelay:int
+);
+season = FOREACH rowdata GENERATE *,
+    (CASE
+        WHEN Month IN (12, 1, 2) THEN 'Winter'
+        WHEN Month IN (3, 4, 5) THEN 'Spring'
+        WHEN Month IN (6, 7, 8) THEN 'Summer'
+        WHEN Month IN (9, 10, 11) THEN 'Autumn'
+    END) AS Season;
+    
+cancell = FILTER season BY Cancelled == 1;
+group_cancell = GROUP cancell BY (CancellationCode,Season);
+cancell_factor = FOREACH group_cancell GENERATE FLATTEN(group) AS (CancellationCode, Season), COUNT(cancell) AS Frequency;
+
+STORE cancell_factor INTO '/user/maria_dev/assignment2/cancell_factors_season' USING PigStorage(',');
+DUMP cancell_factor;
