@@ -3,7 +3,7 @@
 ### Data set introduction ：
 
 The analysis used data on arrival and departure details for all commercial flights on major U.S. airlines during Data Expo 2006. You can download the dataset from this link https://tinyurl.com/u8rzvdsx , or from 2006.csv on the page.
-The data set contains over 11 million observations of flight data with 29 columns. Based on the meta data provided by Harvard:
+This data set contains over 11 million observations of flight data with 29 columns:
 
 **Year [int]:** Year of the dataset (1999 & 2000)
 
@@ -60,6 +60,12 @@ The data set contains over 11 million observations of flight data with 29 column
 **NASDelay [int]:** Delay caused by National Aviation System in minutes
 
 **LateAircraftDelay [int]:** Delay caused by previous late flight arrivals in minutes
+
+### Information reference ：
+
+Flight delay refers to a flight landing more than 15 minutes later than the planned landing time.
+
+### Analysis and insights on output charts :
 
 ![1](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/b25bfa66-c139-4fe1-95fa-5e0db97cc0f8)
 ![2](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/a760bee4-5d08-4eff-92a5-a0b0c154462a)
