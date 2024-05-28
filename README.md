@@ -63,9 +63,19 @@ This data set contains over 11 million observations of flight data with 29 colum
 
 ### Information reference ：
 
-Flight delay refers to a flight landing more than 15 minutes later than the planned landing time.
+Flight delay refers to a flight landing more than 15 minutes later than the planned landing time. Season is also a key factor in flight delays and cancellations, so this factor is included in the reanalysis.
 
 ### Analysis and insights on output charts :
 
-![1](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/b25bfa66-c139-4fe1-95fa-5e0db97cc0f8)
-![2](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/a760bee4-5d08-4eff-92a5-a0b0c154462a)
+In order to more intuitively compare which time period can best reduce delays, we segment it based on the departure time period and calculate the percentage of its delay time.
+
+From the figure below, we can see that the 5 hour time period can best reduce delays because of its delay The lowest percentage is 8.1%. The highest delay percentage was 34.2% for 3 hours,
+
+![1 3](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/31e01fbc-303a-426c-a5ce-7a2dcc65f7d0)
+
+The following figure adds the influencing factor of season, and you can see how each time period changes with the season, which can help people plan their travel time more reasonably. 
+
+In spring, summer and winter, 5 hour is the best time to reduce flight delays,but in autumn 4 hour is the best time to reduce flight delays. Delay rates are highest at 3 hour in summer, fall, and winter, while delays are highest at 19 hour in spring.
+
+![2 3](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/bbe1cc84-5e4a-48cd-a1a6-cdf9636c680d)
+
