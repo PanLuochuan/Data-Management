@@ -1,6 +1,6 @@
 # Explore-flight-delays-and-cancellations-R-Pig
 
-### Data set introduction ：
+## Data set introduction ：
 
 The analysis used data on arrival and departure details for all commercial flights on major U.S. airlines during Data Expo 2006. You can download the dataset from this link https://tinyurl.com/u8rzvdsx , or from 2006.csv on the page.
 This data set contains over 11 million observations of flight data with 29 columns:
@@ -61,12 +61,12 @@ This data set contains over 11 million observations of flight data with 29 colum
 
 **LateAircraftDelay [int]:** Delay caused by previous late flight arrivals in minutes
 
-### Information reference ：
+## Information reference ：
 
 Flight delay refers to a flight landing more than 15 minutes later than the planned landing time. Season is also a key factor in flight delays and cancellations, so this factor is included in the reanalysis.
 
-### Analysis and insights on output charts :
-
+## Analysis and insights on output charts :
+### The optimal times of day for minimizing flight delays?
 In order to more intuitively compare which time period can best reduce delays, we segment it based on the departure time period and calculate the percentage of its delay time.
 
 From the figure below, we can see that the 5 hour time period can best reduce delays because of its delay The lowest percentage is 8.1%. The highest delay percentage was 34.2% for 3 hours,
@@ -78,4 +78,46 @@ The following figure adds the influencing factor of season, and you can see how 
 In spring, summer and winter, 5 hour is the best time to reduce flight delays,but in autumn 4 hour is the best time to reduce flight delays. Delay rates are highest at 3 hour in summer, fall, and winter, while delays are highest at 19 hour in spring.
 
 ![2 3](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/bbe1cc84-5e4a-48cd-a1a6-cdf9636c680d)
+
+### The optimal days of the week for minimizing flight delays?
+
+The best time of the week to reduce flight delays is Saturday. The average delay percentage on Saturday was 18.6%, Average delay percentage on Friday was highest at 26%.
+
+![2 4](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/60ac57d4-afb0-423b-b00b-7d7e20f5c6fb)
+
+In spring, summer and autumn, Fridays are the best days to minimize flight delays, and in winter, Tuesdays are the best days to minimize flight delays.
+
+![2add9f62bac3f019e93ee5b8a67cb0d](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/ce80f7a0-cad8-49df-87fc-0a9c5988af85)
+
+
+### The optimal times of the year for minimizing flight delays
+
+The lowest delay rate in January was 18.4%, and the highest delay rate in December was 25%. May be affected by thunderstorms, the delay rate is generally higher in summer.
+
+![0dbf06579406bd6b8cfc989c3dd4185](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/d7a83c0b-066b-41f0-a073-8a7b205f3534)
+
+
+
+### The primary factors contributing to flight delays
+
+The main factor causing flight delays is the National Aviation System, followed by previous late flight arrivals.
+
+![c1961229b9ce24e97f5962f074d07b7](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/c30ae693-35a1-4128-a798-153fc1b22da0)
+
+
+![f490b68666751bd91f24c5e8d1ba83f](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/f1eabe1e-15fc-438f-add5-f56a0ea5ed48)
+
+### The primary factors lead to flight cancellations
+
+### The most frequent and significant delays and cancellations of flights
+
+![6801504b2b462ee3d882c7f77928deb](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/7a8cae13-4b88-451a-96e1-d3715f5154f5)
+
+![e8c6c8055194084ef50261465fc920b](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/bc3e000e-8194-45f4-9998-cbae88bd6e35)
+
+
+
+
+
+
 
