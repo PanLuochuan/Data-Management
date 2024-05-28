@@ -1,4 +1,5 @@
---1.
+-- 1. What are the optimal times of day, days of the week, and times of the year for minimizing flight delays?
+
 rowdata = LOAD '/user/maria_dev/assignment2/2006.csv' USING PigStorage(',') AS (
     Year:int, Month:int, DayofMonth:int, DayofWeek:int, DepTime:int, CRSDepTime:int, 
     ArrTime:int, CRSArrTime:int, UniqueCarrier:chararray, FlightNum:int, TailNum:chararray, 
@@ -7,24 +8,64 @@ rowdata = LOAD '/user/maria_dev/assignment2/2006.csv' USING PigStorage(',') AS (
     CancellationCode:chararray, Diverted:int, CarrierDelay:int, WeatherDelay:int, 
     NASDelay:int, SecurityDelay:int, LateAircraftDelay:int
 );
-delay = FILTER rowdata BY Cancelled == 0 AND (ArrDelay + DepDelay) / 2 > 0;
 
---day
-season = FOREACH delay GENERATE (ArrDelay + DepDelay)/2 AS AvgDelay, (int)FLOOR(CRSDepTime / 100) AS DepHour,Month,DayofWeek,
+-- the optimal times of day for minimizing flight delays
+-- The first is not to consider the seasonal factors
+
+filterdata = FOREACH rowdata GENERATE
+    (int)FLOOR(CRSDepTime / 100) AS DepHour,
+    (ArrDelay > 15 AND Cancelled == 0 ? 1:0) AS Delay;
+groups = GROUP filterdata BY DepHour;
+day_delay = FOREACH groups GENERATE
+    group AS DepHour,
+    (double)SUM(filterdata.Delay) / (double)COUNT(filterdata) * 100 AS DelayPercentage;
+
+DUMP day_delay;
+
+-- Consider the seasonal factors
+
+filtered = FOREACH rowdata GENERATE
     (CASE
         WHEN Month IN (12, 1, 2) THEN 'Winter'
         WHEN Month IN (3, 4, 5) THEN 'Spring'
         WHEN Month IN (6, 7, 8) THEN 'Summer'
         WHEN Month IN (9, 10, 11) THEN 'Autumn'
-    END) AS Season;
-groups = GROUP season BY (DepHour , Season);
-hour_delay = FOREACH groups GENERATE group.DepHour AS DepHour, group.Season AS Season, AVG(season.AvgDelay) AS MeanDelay;
+    END) AS Season,
+    (int)FLOOR(CRSDepTime / 100) AS DepHour,
+    (ArrDelay > 15 AND Cancelled == 0 ? 1:0) AS Delay;
+grouped = GROUP filtered BY (DepHour, Season);
+delay_stats = FOREACH grouped GENERATE
+    group.DepHour AS DepHour,
+    group.Season AS Season,
+    (double)SUM(filtered.Delay) / (double)COUNT(filtered) * 100 AS DelayPercentage;
+    
+DUMP delay_stats;  
 
-DUMP hour_delay;
+-- The optimal days of the week for minimizing flight delays
+-- The first is not to consider the seasonal factors
 
---week
-week = FOREACH delay GENERATE 
-    (ArrDelay + DepDelay)/2 AS AvgDelay,
+week = FOREACH rowdata GENERATE 
+    DayofWeek AS Week,  
+    (CASE DayofWeek
+        WHEN 1 THEN 'Monday'
+        WHEN 2 THEN 'Tuesday'
+        WHEN 3 THEN 'Wednesday'
+        WHEN 4 THEN 'Thursday'
+        WHEN 5 THEN 'Friday'
+        WHEN 6 THEN 'Saturday'
+        WHEN 7 THEN 'Sunday'
+    END) AS WeekName,
+    (ArrDelay > 15 AND Cancelled == 0 ? 1:0) AS Delay;
+weekgroup = GROUP week BY (Week, WeekName); 
+week_delay = FOREACH weekgroup GENERATE
+    group.Week AS Week,
+    group.WeekName AS WeekName,
+    (double)SUM(week.Delay) / (double)COUNT(week) * 100 AS DelayPercentage;
+DUMP week_delay;   
+
+-- Consider the seasonal factors 
+
+week1 = FOREACH rowdata GENERATE 
     DayofWeek AS Week,  
     (CASE DayofWeek
         WHEN 1 THEN 'Monday'
@@ -40,20 +81,22 @@ week = FOREACH delay GENERATE
         WHEN Month IN (3, 4, 5) THEN 'Spring'
         WHEN Month IN (6, 7, 8) THEN 'Summer'
         WHEN Month IN (9, 10, 11) THEN 'Autumn'
-    END) AS Season;
+    END) AS Season,
+    (ArrDelay > 15 AND Cancelled == 0 ? 1:0) AS Delay;
 
-weekgroup = GROUP week BY (Week, WeekName, Season); 
-week_delay = FOREACH weekgroup GENERATE
+week1_group = GROUP week1 BY (Week, WeekName, Season); 
+week1_delay = FOREACH week1_group GENERATE
     group.Week AS Week,
     group.WeekName AS WeekName,
     group.Season AS Season,
-    AVG(week.AvgDelay) AS MeanDelay;  
+    (double)SUM(week1.Delay) / (double)COUNT(week1) * 100 AS DelayPercentage;
+ 
+DUMP week1_delay;
 
-order_week_delay = ORDER week_delay BY Week;  
-DUMP order_week_delay;
+-- The optimal times of the year for minimizing flight delays
+-- Not to consider the seasonal factors
 
---month
-month = FOREACH delay GENERATE 
+month = FOREACH rowdata GENERATE 
     (ArrDelay + DepDelay)/2 AS AvgDelay,
     Month,  
     (CASE Month
@@ -70,31 +113,27 @@ month = FOREACH delay GENERATE
         WHEN 11 THEN 'Nov'
         WHEN 12 THEN 'Dec'
     END) AS MonthName,
-    (CASE
-        WHEN Month IN (12, 1, 2) THEN 'Winter'
-        WHEN Month IN (3, 4, 5) THEN 'Spring'
-        WHEN Month IN (6, 7, 8) THEN 'Summer'
-        WHEN Month IN (9, 10, 11) THEN 'Autumn'
-    END) AS Season;
+    (ArrDelay > 15 AND Cancelled == 0 ? 1:0) AS Delay;
 
-monthgroup = GROUP month BY (Month, MonthName,Season);  
+monthgroup = GROUP month BY (Month, MonthName);  
 month_delay = FOREACH monthgroup GENERATE 
     group.Month AS Month, 
     group.MonthName AS MonthName,
-    group.Season AS Season,
-    AVG(month.AvgDelay) AS MeanDelay;
-
+    (double)SUM(month.Delay) / (double)COUNT(month) * 100 AS DelayPercentage;
+    
 order_month_delay = ORDER month_delay BY Month;  
 
 DUMP order_month_delay;
 
-STORE hour_delay INTO '/user/maria_dev/assignment2/Hour_dealy_season' USING PigStorage(',');
-STORE order_week_delay INTO '/user/maria_dev/assignment2/Week_delay_season' USING PigStorage(',');
-STORE order_month_delay INTO '/user/maria_dev/assignment2/Month_delay_season' USING PigStorage(',');
+STORE day_delay INTO '/user/maria_dev/assignment2/output/Hour_dealy' USING PigStorage(',');
+STORE delay_stats INTO '/user/maria_dev/assignment2/output/Hour_dealy_season' USING PigStorage(',');
+STORE week_delay INTO '/user/maria_dev/assignment2/output/Week_dealy' USING PigStorage(',');
+STORE week1_delay INTO '/user/maria_dev/assignment2/output/Week_dealy_season' USING PigStorage(',');
+STORE order_month_delay INTO '/user/maria_dev/assignment2/output/Month_dealy' USING PigStorage(',');
 
---2.
 
---3.
+-- 2.What are the primary factors contributing to flight delays?
+-- Not to consider the seasonal factors
 
 rowdata = LOAD '/user/maria_dev/assignment2/2006.csv' USING PigStorage(',') AS (
     Year:int, Month:int, DayofMonth:int, DayofWeek:int, DepTime:int, CRSDepTime:int, 
@@ -104,17 +143,155 @@ rowdata = LOAD '/user/maria_dev/assignment2/2006.csv' USING PigStorage(',') AS (
     CancellationCode:chararray, Diverted:int, CarrierDelay:int, WeatherDelay:int, 
     NASDelay:int, SecurityDelay:int, LateAircraftDelay:int
 );
-season = FOREACH rowdata GENERATE *,
+
+delay1 = FILTER rowdata BY Cancelled == 0 AND ArrDelay > 15;
+
+carrier_delay1 = FOREACH delay1 GENERATE 'CarrierDelay' AS DelayType, CarrierDelay AS DelayMinutes;
+weather_delay1 = FOREACH delay1 GENERATE 'WeatherDelay' AS DelayType, WeatherDelay AS DelayMinutes;
+nas_delay1 = FOREACH delay1 GENERATE 'NASDelay' AS DelayType, NASDelay AS DelayMinutes;
+late_aircraft_delay1 = FOREACH delay1 GENERATE 'LateAircraftDelay' AS DelayType, LateAircraftDelay AS DelayMinutes;
+
+-- 合并所有延误类型
+combine_delay1 = UNION carrier_delay1, weather_delay1, nas_delay1, late_aircraft_delay1;
+
+filter_delays = FILTER combine_delay1 BY DelayMinutes > 0;
+
+-- 按季节和延误类型分组计数
+group_delay = GROUP filter_delays BY DelayType;
+delay_freq = FOREACH group_delay GENERATE group AS DelayType, COUNT(filter_delays) AS Frequency;
+
+-- 按频率排序
+order_delays = ORDER delay_freq BY Frequency DESC;
+
+-- 输出结果
+DUMP order_delays;
+
+-- Consider the seasonal factors
+
+season = FOREACH rowdata GENERATE 
     (CASE
         WHEN Month IN (12, 1, 2) THEN 'Winter'
         WHEN Month IN (3, 4, 5) THEN 'Spring'
         WHEN Month IN (6, 7, 8) THEN 'Summer'
         WHEN Month IN (9, 10, 11) THEN 'Autumn'
-    END) AS Season;
-    
-cancell = FILTER season BY Cancelled == 1;
-group_cancell = GROUP cancell BY (CancellationCode,Season);
-cancell_factor = FOREACH group_cancell GENERATE FLATTEN(group) AS (CancellationCode, Season), COUNT(cancell) AS Frequency;
+    END) AS Season,Cancelled,
+    ArrDelay,
+    CarrierDelay,
+    WeatherDelay,
+    NASDelay,
+    LateAircraftDelay;
+delay = FILTER season BY Cancelled == 0 AND ArrDelay > 15;
+carrier_delay = FOREACH delay GENERATE Season, 'CarrierDelay' AS DelayType, CarrierDelay AS DelayMinutes;
+weather_delay = FOREACH delay GENERATE Season, 'WeatherDelay' AS DelayType, WeatherDelay AS DelayMinutes;
+nas_delay = FOREACH delay GENERATE Season, 'NASDelay' AS DelayType, NASDelay AS DelayMinutes;
+late_aircraft_delay = FOREACH delay GENERATE Season, 'LateAircraftDelay' AS DelayType, LateAircraftDelay AS DelayMinutes;
 
-STORE cancell_factor INTO '/user/maria_dev/assignment2/cancell_factors_season' USING PigStorage(',');
-DUMP cancell_factor;
+-- 合并所有延误类型
+combine_delay = UNION carrier_delay, weather_delay, nas_delay, late_aircraft_delay;
+
+filtered_delays = FILTER combine_delay BY DelayMinutes > 0;
+
+-- 按季节和延误类型分组计数
+group_delay = GROUP filtered_delays BY (Season, DelayType);
+delay_freq = FOREACH group_delay GENERATE group.Season AS Season, group.DelayType AS DelayType, COUNT(filtered_delays) AS Frequency;
+
+-- 按频率排序
+ordered_delays = ORDER delay_freq BY Frequency DESC;
+
+-- 输出结果
+DUMP ordered_delays;
+STORE order_delays INTO '/user/maria_dev/assignment2/output/delay_factors' USING PigStorage (',');
+STORE ordered_delays INTO '/user/maria_dev/assignment2/output/delay_factors_season' USING PigStorage(',');
+
+-- 3.What factors predominantly lead to flight cancellations?
+-- Not to consider the seasonal factors
+
+rowdata = LOAD '/user/maria_dev/assignment2/2006.csv' USING PigStorage(',') AS (
+    Year:int, Month:int, DayofMonth:int, DayofWeek:int, DepTime:int, CRSDepTime:int, 
+    ArrTime:int, CRSArrTime:int, UniqueCarrier:chararray, FlightNum:int, TailNum:chararray, 
+    ActualElapsedTime:int, CRSELapsedTime:int, AirTime:int, ArrDelay:int, DepDelay:int, 
+    Origin:chararray, Dest:chararray, Distance:int, TaxiIn:int, TaxiOut:int, Cancelled:int, 
+    CancellationCode:chararray, Diverted:int, CarrierDelay:int, WeatherDelay:int, 
+    NASDelay:int, SecurityDelay:int, LateAircraftDelay:int
+);
+    
+cancell = FILTER rowdata BY Cancelled == 1;
+group_cancelled = GROUP cancell BY CancellationCode;
+cancell_factors = FOREACH group_cancelled GENERATE group AS CancellationCode,COUNT(cancell) AS Frequency;
+
+DUMP cancell_factors;
+
+-- Consider the seasonal factors
+
+season = FOREACH cancell GENERATE
+    (CASE
+        WHEN Month IN (12, 1, 2) THEN 'Winter'
+        WHEN Month IN (3, 4, 5) THEN 'Spring'
+        WHEN Month IN (6, 7, 8) THEN 'Summer'
+        WHEN Month IN (9, 10, 11) THEN 'Autumn'
+    END) AS Season,
+    CancellationCode;
+
+-- 按取消代码和季节分组
+group_cancell = GROUP season BY (CancellationCode, Season);
+
+-- 计算每个组的频率
+cancell_factor = FOREACH group_cancell GENERATE
+    FLATTEN(group) AS (CancellationCode, Season),
+    COUNT(season) AS Frequency;
+
+-- 输出结果
+DUMP cancell_factor;
+STORE cancell_factors INTO '/user/maria_dev/assignment2/output/cancell_factors' USING PigStorage(',');
+STORE cancell_factor INTO '/user/maria_dev/assignment2/output/cancell_factors_season' USING PigStorage(',');
+
+
+-- 4.Which flight experiences the most frequent and significant delays and cancellations?
+-- The most frequent and significant cancellations
+rowdata = LOAD '/user/maria_dev/assignment2/2006.csv' USING PigStorage(',') AS (
+    Year:int, Month:int, DayofMonth:int, DayofWeek:int, DepTime:int, CRSDepTime:int, 
+    ArrTime:int, CRSArrTime:int, UniqueCarrier:chararray, FlightNum:int, TailNum:chararray, 
+    ActualElapsedTime:int, CRSELapsedTime:int, AirTime:int, ArrDelay:int, DepDelay:int, 
+    Origin:chararray, Dest:chararray, Distance:int, TaxiIn:int, TaxiOut:int, Cancelled:int, 
+    CancellationCode:chararray, Diverted:int, CarrierDelay:int, WeatherDelay:int, 
+    NASDelay:int, SecurityDelay:int, LateAircraftDelay:int);
+
+cancell = FILTER rowdata BY Cancelled == 1;   
+group_flight = GROUP cancell BY (UniqueCarrier, FlightNum);
+
+flight = FOREACH group_flight GENERATE 
+    FLATTEN(group) AS (UniqueCarrier, FlightNum),
+    COUNT(cancell) AS Count;
+
+top_cancell = ORDER flight BY Count DESC;
+top_cancell10 = LIMIT top_cancell 10;
+
+STORE top_cancell10 INTO '/user/maria_dev/assignment2/output/top_cancellation' USING PigStorage(',');
+DUMP top_cancell10;
+
+-- The most frequent and significant delays 
+
+rowdata = LOAD '/user/maria_dev/assignment2/2006.csv' USING PigStorage(',') AS (
+    Year:int, Month:int, DayofMonth:int, DayofWeek:int, DepTime:int, CRSDepTime:int, 
+    ArrTime:int, CRSArrTime:int, UniqueCarrier:chararray, FlightNum:int, TailNum:chararray, 
+    ActualElapsedTime:int, CRSELapsedTime:int, AirTime:int, ArrDelay:int, DepDelay:int, 
+    Origin:chararray, Dest:chararray, Distance:int, TaxiIn:int, TaxiOut:int, Cancelled:int, 
+    CancellationCode:chararray, Diverted:int, CarrierDelay:int, WeatherDelay:int, 
+    NASDelay:int, SecurityDelay:int, LateAircraftDelay:int
+);
+delay = FILTER rowdata BY Cancelled == 0 AND ArrDelay > 15;
+group_data = GROUP delay BY (UniqueCarrier, FlightNum);
+flight = FOREACH group_data GENERATE 
+    FLATTEN(group) AS (UniqueCarrier, FlightNum),
+    COUNT(delay) AS Count;
+top_delay = ORDER flight BY Count DESC;
+top_10_delay = LIMIT top_delay 10;
+
+DUMP top_10_delay;
+STORE top_10_delay INTO '/user/maria_dev/assignment2/output/top_delay' USING PigStorage(',');
+
+
+
+
+
+
