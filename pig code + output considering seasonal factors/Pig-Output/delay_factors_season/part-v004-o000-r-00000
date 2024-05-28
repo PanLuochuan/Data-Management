@@ -1,0 +1,16 @@
+Autumn,NASDelay,244553
+Summer,NASDelay,233161
+Winter,NASDelay,214565
+Spring,NASDelay,209161
+Summer,LateAircraftDelay,202732
+Summer,CarrierDelay,202022
+Autumn,LateAircraftDelay,171748
+Winter,CarrierDelay,171479
+Spring,LateAircraftDelay,169350
+Winter,LateAircraftDelay,167420
+Spring,CarrierDelay,160225
+Autumn,CarrierDelay,157603
+Summer,WeatherDelay,34169
+Winter,WeatherDelay,27070
+Autumn,WeatherDelay,26705
+Spring,WeatherDelay,24175
