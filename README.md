@@ -66,7 +66,8 @@ This data set contains over 11 million observations of flight data with 29 colum
 Flight delay refers to a flight landing more than 15 minutes later than the planned landing time. Season is also a key factor in flight delays and cancellations, so this factor is included in the reanalysis.
 
 ## Analysis and insights on output charts :
-### The optimal times of day for minimizing flight delays?
+### The optimal times of day for minimizing flight delays
+
 In order to more intuitively compare which time period can best reduce delays, we segment it based on the departure time period and calculate the percentage of its delay time.
 
 From the figure below, we can see that the 5 hour time period can best reduce delays because of its delay The lowest percentage is 8.1%. The highest delay percentage was 34.2% for 3 hours,
@@ -79,7 +80,7 @@ In spring, summer and winter, 5 hour is the best time to reduce flight delays,bu
 
 ![2 3](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/bbe1cc84-5e4a-48cd-a1a6-cdf9636c680d)
 
-### The optimal days of the week for minimizing flight delays?
+### The optimal days of the week for minimizing flight delays
 
 The best time of the week to reduce flight delays is Saturday. The average delay percentage on Saturday was 18.6%, Average delay percentage on Friday was highest at 26%.
 
@@ -104,16 +105,32 @@ The main factor causing flight delays is the National Aviation System, followed 
 
 ![c1961229b9ce24e97f5962f074d07b7](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/c30ae693-35a1-4128-a798-153fc1b22da0)
 
+The main factor causing flight delays in any season is the National Aviation System.
 
-![f490b68666751bd91f24c5e8d1ba83f](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/f1eabe1e-15fc-438f-add5-f56a0ea5ed48)
+![7598688e26107ec908a232a0c08c585](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/1160492f-27e3-4381-bd76-6387f36d8a7e)
+
 
 ### The primary factors lead to flight cancellations
 
+The main factor causing flight cancellations is the carrier, followed by weather. Flights are rarely canceled for security reasons.
+
+![b39f02e64603c44d04fca77b06755cb](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/9628581e-e209-46ac-9f97-1d8cc978ea17)
+
+For spring, summer and autumn, the top cause of flight cancellations is Carrier, but for winter, the top cause of flight cancellations is weather.
+
+![f40d5d44e0524a9667bbba1a16b7ccc](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/880d3cfa-9c40-4f22-82ac-596fa1146030)
+
+
 ### The most frequent and significant delays and cancellations of flights
 
-![6801504b2b462ee3d882c7f77928deb](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/7a8cae13-4b88-451a-96e1-d3715f5154f5)
+Flight WN20 is the most frequently canceled, as can be seen from the top ten charts with the highest cancellation rate.
 
-![e8c6c8055194084ef50261465fc920b](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/bc3e000e-8194-45f4-9998-cbae88bd6e35)
+![image](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/3bd9bb19-ab52-49a9-8244-730cab3daf81)
+
+The WN269 flights are delayed the most frequently, as can be seen from the top ten charts with the highest delay rates.
+
+![image](https://github.com/PanLuochuan/Explore-flight-delays-and-cancellations-R-Pig/assets/152348928/6478d9a8-4aeb-4f99-8979-4d4712c9eaf7)
+
 
 
 
