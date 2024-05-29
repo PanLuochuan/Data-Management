@@ -48,7 +48,7 @@ delay_stats = FOREACH grouped GENERATE
 DUMP delay_stats;  
 
 
--- The optimal days of the week for minimizing flight delays
+-- b.The optimal days of the week for minimizing flight delays
 
 -- The first is not to consider the seasonal factors.
 -- Map the number to the corresponding day of the week.
@@ -99,7 +99,7 @@ week1_delay = FOREACH week1_group GENERATE
     (double)SUM(week1.Delay) / (double)COUNT(week1) * 100 AS DelayPercentage;
 DUMP week1_delay;
 
--- The optimal times of the year for minimizing flight delays
+-- c.The optimal times of the year for minimizing flight delays
 
 -- Not to consider the seasonal factors
 -- Map the number to the corresponding month.
@@ -147,7 +147,7 @@ weather_delay1 = FOREACH delay1 GENERATE 'WeatherDelay' AS DelayType, WeatherDel
 nas_delay1 = FOREACH delay1 GENERATE 'NASDelay' AS DelayType, NASDelay AS DelayMinutes;
 late_aircraft_delay1 = FOREACH delay1 GENERATE 'LateAircraftDelay' AS DelayType, LateAircraftDelay AS DelayMinutes;
 combine_delay1 = UNION carrier_delay1, weather_delay1, nas_delay1, late_aircraft_delay1;
-
+-- Further filtering of invalid and irrelevant data.
 filter_delays = FILTER combine_delay1 BY DelayMinutes > 0;
 group_delay = GROUP filter_delays BY DelayType;
 delay_freq = FOREACH group_delay GENERATE group AS DelayType, COUNT(filter_delays) AS Frequency;
@@ -198,7 +198,6 @@ cancell_factors = FOREACH group_cancelled GENERATE group AS CancellationCode,COU
 DUMP cancell_factors;
 
 -- Consider the seasonal factors
-
 season = FOREACH cancell GENERATE
     (CASE
         WHEN Month IN (12, 1, 2) THEN 'Winter'
@@ -222,15 +221,16 @@ STORE cancell_factor INTO '/user/maria_dev/assignment2/output/cancell_factors_se
 
 
 -- 4.Which flight experiences the most frequent and significant delays and cancellations?
--- The most frequent and significant cancellations
 
+-- The most frequent and significant cancellations
 cancell = FILTER rowdata BY Cancelled == 1;   
+-- Grouped by airline and flight number
 group_flight = GROUP cancell BY (UniqueCarrier, FlightNum);
 
 flight = FOREACH group_flight GENERATE 
     FLATTEN(group) AS (UniqueCarrier, FlightNum),
     COUNT(cancell) AS Count;
-
+--sort
 top_cancell = ORDER flight BY Count DESC;
 top_cancell10 = LIMIT top_cancell 10;
 
