@@ -294,32 +294,5 @@ ggplot(top_delay, aes(x = reorder(paste(UniqueCarrier, FlightNum), -DelayedFligh
   labs(title = "Top 10 Most Frequently Delayed Flights",x = "Flight's Number",
        y = "Number of Delay Instances") +theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-# Flight B6 9024 has the longest average delay
-
-top_delay1 <- flight_delay %>%
-  arrange(desc(AverageDelay)) %>%
-  slice_head(n = 10)
-
-ggplot(top_delay1, aes(x = reorder(paste(UniqueCarrier, FlightNum), -AverageDelay), y = AverageDelay)) +
-  geom_col(fill = "lavender", colour = "violet") +
-  labs(title = "Top 10 Flights with the Longest Average Delays", 
-       x = "Flight", 
-       y = "Average Delay Time (minutes)") +
-  theme_minimal() +
-  geom_text(aes(label = round(AverageDelay, 1)),
-            vjust = -0.5, size = 3, color = 'black') +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-delay <- airpline %>% filter(Cancelled == 0)
-delay_counts <- delay %>% group_by(FlightNum, UniqueCarrier) %>%
-  summarise(Count = n(), .groups = 'drop') %>%
-  arrange(desc(Count))
-head(delay)
-top_delay <- delay_counts %>%top_n(10, Count)
-
-
-
-
                                           
 
