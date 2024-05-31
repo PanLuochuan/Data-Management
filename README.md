@@ -1,5 +1,15 @@
 # Explore-flight-delays-and-cancellations(by using R and Pig)
 
+## Analyze and explore the following questions :
+
+What are the optimal times of day, days of the week, and times of the year for minimizing flight delays?
+
+What are the primary factors contributing to flight delays?
+
+What factors predominantly lead to flight cancellations?
+
+Which flight experiences the most frequent and significant delays and cancellations?
+
 ## Data set introduction ：
 
 The analysis used data on arrival and departure details for all commercial flights on major U.S. airlines during Data Expo 2006. You can download the dataset from this link https://tinyurl.com/u8rzvdsx , or from 2006.csv on the page.
